@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // Use VITE_API_URL (injected at build time) or fallback to local proxy
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const BASE_URL = import.meta.env.VITE_API_URL + '/api'
 
 // Create an axios instance with default config
 const api = axios.create({
