@@ -1,0 +1,43 @@
+.session-warning {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-width: 400px;
+  width: 100%;
+  animation: slide-in 0.3s ease-out;
+}
+
+.session-warning-content {
+  padding: 20px;
+}
+
+.session-warning h3 {
+  margin-top: 0;
+  color: #e53e3e;
+}
+
+.session-warning p {
+  margin-bottom: 15px;
+}
+
+.session-warning-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
