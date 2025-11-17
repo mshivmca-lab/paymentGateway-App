@@ -1,7 +1,17 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import transporter from "../config/email.js";
+// import path from "path";
+
+const createRefreshToken = (user) => {
+  return jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_COOKIE_EXPIRE || "7d" }
+  );
+};
 
 
 //register
@@ -160,6 +170,15 @@ export const logout = (req, res) => {
     expires: new Date(Date.now()), // Expire immediately
     httpOnly: true,
     sameSite: "strict",
+    path: "/",
+  });
+
+    // Clear the refresh token cookie
+  res.cookie("refreshToken", "", {
+    httpOnly: true,
+    expires: new Date(0),
+    sameSite: "lax",
+    path: "/",
   });
 
   res.status(200).json({
@@ -268,23 +287,32 @@ export const updatePassword = async (req, res) => {
 // @access  Private
 export const refreshToken = async (req, res) => {
   try {
-    console.log(`Refresh token request received for user ID: ${req.user.id}`);
+    const token = req.cookies?.refreshToken;
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        error: "No refresh token provided",
+      });
+    }
 
-    // Get user from middleware
-    const user = await User.findById(req.user.id);
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    } catch (err) {
+      console.error("Invalid refresh token:", err.message);
+      return res.status(401).json({
+        success: false,
+        error: "Invalid refresh token",
+      });
+    }
 
+    const user = await User.findById(payload.id);
     if (!user) {
-      console.error(
-        `User not found for ID: ${req.user.id} during token refresh`
-      );
       return res.status(404).json({
         success: false,
         error: "User not found",
       });
     }
-
-    console.log(`User found. Generating new token for: ${user.email}`);
-
     // Generate new token and send response
     sendTokenResponse(user, 200, res);
     console.log("Token refresh completed successfully");
@@ -299,10 +327,11 @@ export const refreshToken = async (req, res) => {
 
 // Helper function to get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
-  // Create token
+  // Create access token (existing helper on model)
   const token = user.getSignedJwtToken();
 
-  const options = {
+  // Access cookie options (keeps original behavior)
+  const accessOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
@@ -310,17 +339,34 @@ const sendTokenResponse = (user, statusCode, res) => {
     sameSite: "strict",
   };
 
-  // Use secure flag in production
   if (process.env.NODE_ENV === "production") {
-    options.secure = true;
+    accessOptions.secure = true;
   }
 
-  // Remove password from output
+  // Create refresh token and cookie options (long-lived)
+  const refreshToken = createRefreshToken(user);
+  const refreshOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge:
+      parseInt(process.env.REFRESH_TOKEN_MAX_AGE_MS, 10) ||
+      7 * 24 * 60 * 60 * 1000, // default 7 days
+  };
+
+  // Remove password before sending
   user.password = undefined;
 
-  res.status(statusCode).cookie("token", token, options).json({
-    success: true,
-    token,
-    user,
-  });
+  // Set both cookies (access token cookie kept for backwards compatibility)
+  // and return access token in JSON as before
+  res
+    .status(statusCode)
+    .cookie("token", token, accessOptions)
+    .cookie("refreshToken", refreshToken, refreshOptions)
+    .json({
+      success: true,
+      token,
+      user,
+    });
 };

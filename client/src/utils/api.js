@@ -1,7 +1,5 @@
 import axios from 'axios'
 
-// Use VITE_API_URL (injected at build time) or fallback to local proxy.
-// Normalize to avoid "undefined/api" or duplicated "/api".
 const _envBase = import.meta.env.VITE_API_URL || ''
 const _cleanBase = _envBase.replace(/\/+$/,'') // remove trailing slashes
 const BASE_URL = _cleanBase
@@ -13,12 +11,11 @@ const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true
 })
 
-// Flag to prevent multiple refresh token requests
 let isRefreshing = false
-// Store pending requests that should be retried after token refresh
 let failedQueue = []
 
 // Process the queue of failed requests
@@ -34,13 +31,9 @@ const processQueue = (error, token = null) => {
   failedQueue = []
 }
 
-// Add a request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage
     const token = localStorage.getItem('token')
-
-    // If token exists, add it to the request header
     if (token) {
       config.headers = config.headers || {}
       config.headers['Authorization'] = `Bearer ${token}`
@@ -53,7 +46,6 @@ api.interceptors.request.use(
   }
 )
 
-// Add a response interceptor
 api.interceptors.response.use(
   (response) => {
     return response
@@ -89,13 +81,11 @@ api.interceptors.response.use(
       try {
         console.log('Attempting to refresh token...')
         // Use full BASE_URL so the refresh request hits the API host (not the static site)
-        const response = await axios.get(`${BASE_URL.replace(/\/+$/, '')}/auth/refresh-token`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          _retry: true
-        })
-
+        const response = await axios.post(
+          `${BASE_URL.replace(/\/+$/, '')}/auth/refresh-token`,
+        {},
+        { withCredentials: true}
+        )
         if (response.data?.success && response.data?.token) {
           console.log('Token refresh successful!')
           // Update token in localStorage
@@ -133,7 +123,7 @@ api.interceptors.response.use(
         processQueue(refreshError, null)
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-        localStorage.removeItem('sessionExpiry')
+        // localStorage.removeItem('sessionExpiry')
         window.location.href = '/login'
 
         return Promise.reject(refreshError)
