@@ -297,7 +297,7 @@ export const refreshToken = async (req, res) => {
 
     let payload;
     try {
-      payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+      payload = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       console.error("Invalid refresh token:", err.message);
       return res.status(401).json({
@@ -351,7 +351,7 @@ const sendTokenResponse = (user, statusCode, res) => {
     sameSite: "lax",
     path: "/",
     maxAge:
-      parseInt(process.env.REFRESH_TOKEN_MAX_AGE_MS, 10) ||
+      parseInt(process.env.JWT_COOKIE_EXPIRE, 10) ||
       7 * 24 * 60 * 60 * 1000, // default 7 days
   };
 
