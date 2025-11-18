@@ -164,20 +164,47 @@ export const login = async (req, res) => {
 // @desc    Logout user / clear cookie
 // @route   GET /api/auth/logout
 // @access  Private
+// export const logout = (req, res) => {
+//   // Clear the cookie by setting it to expire immediately
+//   res.cookie("token", "none", {
+//     expires: new Date(Date.now()), // Expire immediately
+//     httpOnly: true,
+//     sameSite: "strict",
+//     path: "/",
+//   });
+
+//     // Clear the refresh token cookie
+//   res.cookie("refreshToken", "", {
+//     httpOnly: true,
+//     expires: new Date(0),
+//     sameSite: "lax",
+//     path: "/",
+//   });
+
+//   res.status(200).json({
+//     success: true,
+//     message: "Logged out successfully",
+//     data: {},
+//   });
+// };
 export const logout = (req, res) => {
-  // Clear the cookie by setting it to expire immediately
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // Clear the token cookie
   res.cookie("token", "none", {
-    expires: new Date(Date.now()), // Expire immediately
+    expires: new Date(Date.now()),
     httpOnly: true,
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "strict",
     path: "/",
   });
 
-    // Clear the refresh token cookie
+  // Clear the refresh token cookie
   res.cookie("refreshToken", "", {
     httpOnly: true,
     expires: new Date(0),
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/",
   });
 
@@ -326,40 +353,85 @@ export const refreshToken = async (req, res) => {
 };
 
 // Helper function to get token from model, create cookie and send response
+// const sendTokenResponse = (user, statusCode, res) => {
+//   // Create access token (existing helper on model)
+//   const token = user.getSignedJwtToken();
+
+//   // Access cookie options (keeps original behavior)
+//   const accessOptions = {
+//     expires: new Date(
+//       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+//     ),
+//     httpOnly: true,
+//     sameSite: "strict",
+//   };
+
+//   if (process.env.NODE_ENV === "production") {
+//     accessOptions.secure = true;
+//   }
+
+//   // Create refresh token and cookie options (long-lived)
+//   const refreshToken = createRefreshToken(user);
+//   const refreshOptions = {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === "production",
+//     sameSite: "lax",
+//     path: "/",
+//     maxAge:
+//       parseInt(process.env.JWT_COOKIE_EXPIRE, 10) ||
+//       7 * 24 * 60 * 60 * 1000, // default 7 days
+//   };
+
+//   // Remove password before sending
+//   user.password = undefined;
+
+//   // Set both cookies (access token cookie kept for backwards compatibility)
+//   // and return access token in JSON as before
+//   res
+//     .status(statusCode)
+//     .cookie("token", token, accessOptions)
+//     .cookie("refreshToken", refreshToken, refreshOptions)
+//     .json({
+//       success: true,
+//       token,
+//       user,
+//     });
+// };
+// Helper function to get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create access token (existing helper on model)
   const token = user.getSignedJwtToken();
 
-  // Access cookie options (keeps original behavior)
+  // Create refresh token
+  const refreshToken = createRefreshToken(user);
+
+  // ✅ PRODUCTION-READY COOKIE OPTIONS
+  const isProduction = process.env.NODE_ENV === "production";
+  
+  // Access token cookie options
   const accessOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    sameSite: "strict",
+    secure: isProduction,  // ✅ HTTPS only in production
+    sameSite: isProduction ? "none" : "strict",  // ✅ 'none' allows cross-origin
+    path: "/",
   };
 
-  if (process.env.NODE_ENV === "production") {
-    accessOptions.secure = true;
-  }
-
-  // Create refresh token and cookie options (long-lived)
-  const refreshToken = createRefreshToken(user);
+  // Refresh token cookie options
   const refreshOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,  // ✅ HTTPS only in production
+    sameSite: isProduction ? "none" : "lax",  // ✅ 'none' allows cross-origin
     path: "/",
-    maxAge:
-      parseInt(process.env.JWT_COOKIE_EXPIRE, 10) ||
-      7 * 24 * 60 * 60 * 1000, // default 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   };
 
   // Remove password before sending
   user.password = undefined;
 
-  // Set both cookies (access token cookie kept for backwards compatibility)
-  // and return access token in JSON as before
+  // Set both cookies and return access token in JSON
   res
     .status(statusCode)
     .cookie("token", token, accessOptions)
