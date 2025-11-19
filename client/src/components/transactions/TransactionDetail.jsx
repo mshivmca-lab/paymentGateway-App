@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import axios from 'axios'
+import api from '../../utils/api'
 
 const TransactionDetail = () => {
   const [transaction, setTransaction] = useState(null)
@@ -12,7 +12,7 @@ const TransactionDetail = () => {
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
-        const response = await axios.get(`/api/transactions/${id}`)
+        const response = await api.get(`/transactions/${id}`)
         setTransaction(response.data.data)
         setLoading(false)
       } catch (err) {

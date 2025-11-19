@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const _envBase = import.meta.env.VITE_API_URL || ''
-const _cleanBase = _envBase.replace(/\/+$/,'') // remove trailing slashes
+const _envBase = import.meta.env.VITE_API_URL||''
+const _cleanBase = _envBase.replace(/\/+$/,'')
 const BASE_URL = _cleanBase
   ? (_cleanBase.endsWith('/api') ? _cleanBase : `${_cleanBase}/api`)
   : '/api'

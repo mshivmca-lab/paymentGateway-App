@@ -25,7 +25,8 @@ import "./App.css";
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <AuthProvider value={{ user: { email: "yash966591@gmail.com" } }}>
+      <AuthProvider >
+        {/* value={{ user: { email: "yash966591@gmail.com" } }} */}
         <Navbar />
         <SessionManager />
         {/* <div > */}

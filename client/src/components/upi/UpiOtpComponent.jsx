@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 import AuthContext from "../../context/AuthContext";
 
 const UpiOtpComponent = ({ onVerified }) => {
@@ -11,7 +11,7 @@ const UpiOtpComponent = ({ onVerified }) => {
 
   const sendOtp = async () => {
     try {
-      await axios.post("/api/otp/send-otp", { email: user.email });
+      await api.post("/otp/send-otp", { email: user.email });
       setOtpSent(true);
       setCooldown(60);
       setTimeLeft(300);
@@ -22,7 +22,7 @@ const UpiOtpComponent = ({ onVerified }) => {
 
   const verifyOtpAndPay = async () => {
     try {
-      const res = await axios.post("/api/otp/verify-otp", {
+      const res = await api.post("/otp/verify-otp", {
         email: user.email,
         otp,
       });

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
+import api from '../../utils/api'
 import { Button } from '../ui/button'
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
@@ -40,7 +40,7 @@ const UpiPinUpdate = () => {
     try {
       setLoading(true)
 
-      const response = await axios.put('/api/upi/update-pin', {
+      const response = await api.put('/upi/update-pin', {
         currentPin: formData.currentPin,
         newPin: formData.newPin
       })

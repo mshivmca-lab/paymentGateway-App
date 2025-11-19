@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import api from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import MoneyTransfer from './MoneyTransfer'
 import TransactionHistory from './TransactionHistory'
@@ -23,7 +23,7 @@ const WalletDashboard = () => {
   // Fetch user balance
   const fetchBalance = async () => {
     try {
-      const response = await axios.get('/api/transactions/balance')
+      const response = await api.get('/transactions/balance')
       setBalance(response.data.data.balance)
       setLoading(false)
     } catch (err) {

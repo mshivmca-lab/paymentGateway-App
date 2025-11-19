@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../ui/button'
 import { Label } from "../ui/label"
@@ -25,7 +25,7 @@ const UpiSetup = () => {
     const fetchUpiDetails = async () => {
       try {
         setLoading(true)
-        const response = await axios.get('/api/upi/details')
+        const response = await api.get('/upi/details')
         setUpiDetails(response.data.data)
         setLoading(false)
       } catch (err) {
@@ -72,7 +72,7 @@ const UpiSetup = () => {
     try {
       setLoading(true)
 
-      const response = await axios.post('/api/upi/setup', {
+      const response = await api.post('/upi/setup', {
         customUpiId: formData.customUpiId || undefined,
         pin: formData.pin
       })

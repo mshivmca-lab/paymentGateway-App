@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "@/utils/api";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/button";
 import {
@@ -44,7 +44,7 @@ const TransactionHistory = () => {
       if (filters.startDate) queryParams += `&startDate=${filters.startDate}`;
       if (filters.endDate) queryParams += `&endDate=${filters.endDate}`;
 
-      const response = await axios.get(`/api/transactions?${queryParams}`);
+      const response = await api.get(`/transactions?${queryParams}`);
 
       setTransactions(response.data.data);
       setPagination({

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 
 const Dashboard = () => {
@@ -12,7 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const res = await axios.get('/api/merchant/dashboard')
+        const res = await api.get('/merchant/dashboard')
         setDashboardData(res.data.data)
         setLoading(false)
       } catch (err) {

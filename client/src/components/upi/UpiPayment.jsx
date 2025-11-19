@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
@@ -36,10 +36,10 @@ const UpiPayment = () => {
       try {
         setLoading(true)
 
-        const upiResponse = await axios.get('/api/upi/details')
+        const upiResponse = await api.get('/upi/details')
         setUpiDetails(upiResponse.data.data)
 
-        const balanceResponse = await axios.get('/api/transactions/balance')
+        const balanceResponse = await api.get('/transactions/balance')
         setBalance(balanceResponse.data.data.balance)
 
         setLoading(false)
@@ -79,7 +79,7 @@ const UpiPayment = () => {
     }
 
     try {
-      await axios.post('/api/otp/send-otp', { email: user.email })
+      await api.post('/otp/send-otp', { email: user.email })
       setOtpSent(true)
       setShowOtpBox(true)
     } catch (err) {
@@ -89,7 +89,7 @@ const UpiPayment = () => {
 
   const handleVerifyOtp = async () => {
     try {
-      await axios.post('/api/otp/verify-otp', {
+      await api.post('/otp/verify-otp', {
         email: user.email,
         otp
       })
@@ -104,7 +104,7 @@ const UpiPayment = () => {
   const handleFinalPayment = async () => {
     try {
       setLoading(true)
-      const response = await axios.post('/api/upi/pay', {
+      const response = await api.post('/upi/pay', {
         ...formData
       })
 

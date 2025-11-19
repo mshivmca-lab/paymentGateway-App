@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from '../../utils/api';
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/button";
 const MoneyTransfer = ({ onTransferSuccess }) => {
@@ -18,7 +18,7 @@ const MoneyTransfer = ({ onTransferSuccess }) => {
   // Fetch user balance
   const fetchBalance = async () => {
     try {
-      const response = await axios.get("/api/transactions/balance");
+      const response = await api.get("/transactions/balance");
       setBalance(response.data.data.balance);
     } catch (err) {
       console.error("Error fetching balance:", err);
@@ -65,7 +65,7 @@ const MoneyTransfer = ({ onTransferSuccess }) => {
     try {
       setLoading(true);
 
-      const response = await axios.post("/api/transactions/transfer", formData);
+      const response = await api.post("/transactions/transfer", formData);
 
       setSuccess("Money transferred successfully!");
       setFormData({

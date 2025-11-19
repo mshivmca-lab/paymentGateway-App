@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import UpiSetup from './UpiSetup'
 import UpiPinUpdate from './UpiPinUpdate'
@@ -23,7 +23,7 @@ const UpiDashboard = () => {
     const fetchUpiDetails = async () => {
       try {
         setLoading(true)
-        const response = await axios.get('/api/upi/details')
+        const response = await api.get('/upi/details')
         setUpiDetails(response.data.data)
         
         // If UPI is not set up, show setup tab

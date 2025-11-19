@@ -6,7 +6,6 @@ import {
   useCallback,
   useRef,
 } from "react";
-import axios from "axios";
 import api from "../utils/api";
 
 const AuthContext = createContext();
@@ -19,8 +18,6 @@ export const AuthProvider = ({ children }) => {
   const [sessionTimeout, setSessionTimeout] = useState(null);
   const tokenRefreshTimeout = useRef(null);
 
-  
-
   const SESSION_TIMEOUT = 30 * 60 * 1000;
   const TOKEN_REFRESH_INTERVAL = SESSION_TIMEOUT - 5 * 60 * 1000;
 
@@ -31,8 +28,6 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem("token");
 
         if (storedUser && token) {
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
           try {
             const res = await api.get("/auth/me");
             if (res.data.success) {
@@ -41,12 +36,10 @@ export const AuthProvider = ({ children }) => {
             } else {
               localStorage.removeItem("token");
               localStorage.removeItem("user");
-              delete axios.defaults.headers.common["Authorization"];
             }
           } catch {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
-            delete axios.defaults.headers.common["Authorization"];
           }
         }
 
@@ -69,8 +62,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("sessionExpiry");
-
-      delete axios.defaults.headers.common["Authorization"];
 
       if (sessionTimeout) {
         clearTimeout(sessionTimeout);
@@ -104,10 +95,6 @@ export const AuthProvider = ({ children }) => {
         setUser(res.data.user);
         setIsAuthenticated(true);
 
-        axios.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${res.data.token}`;
-
         resetSessionTimeout();
       }
 
@@ -137,10 +124,6 @@ export const AuthProvider = ({ children }) => {
         setUser(res.data.user);
         setIsAuthenticated(true);
 
-        axios.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${res.data.token}`;
-
         resetSessionTimeout();
       }
 
@@ -161,11 +144,8 @@ export const AuthProvider = ({ children }) => {
   const refreshToken = useCallback(async () => {
     try {
       if (isAuthenticated && localStorage.getItem("token")) {
-        const res = await axios.get("/api/auth/refresh-token", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        // Using api instance which already handles auth headers and base URL
+        const res = await api.get("/auth/refresh-token");
 
         if (res.data.success) {
           localStorage.setItem("token", res.data.token);
@@ -174,10 +154,6 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("user", JSON.stringify(res.data.user));
             setUser(res.data.user);
           }
-
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${res.data.token}`;
 
           const expiryTime = Date.now() + SESSION_TIMEOUT;
           localStorage.setItem("sessionExpiry", expiryTime.toString());

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from '../../utils/api';
 import { Button } from "../ui/button";
 import {
   Select,
@@ -32,7 +32,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/users");
+      const res = await api.get("/users");
       setUsers(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -86,11 +86,11 @@ const UserManagement = () => {
     try {
       if (formMode === "create") {
         // Create new user
-        await axios.post("/api/users", formData);
+        await api.post("/users", formData);
         setMessage("User created successfully");
       } else {
         // Update existing user
-        await axios.put(`/api/users/${selectedUser._id}`, formData);
+        await api.put(`/users/${selectedUser._id}`, formData);
         setMessage("User updated successfully");
       }
 
@@ -109,7 +109,7 @@ const UserManagement = () => {
     }
 
     try {
-      await axios.delete(`/api/users/${userId}`);
+      await api.delete(`/users/${userId}`);
       setMessage("User deleted successfully");
       fetchUsers();
     } catch (err) {
