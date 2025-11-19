@@ -55,7 +55,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+    setFormError("")
+    setSuccessMessage("")
+    clearError()
     if (!name || !email || !password) {
       setFormError("Please provide all required fields")
       return
@@ -77,17 +79,32 @@ const Register = () => {
 
       const response = await register(userData)
       
-      if (response.success) {
+      if (response && response.success) {
         setSuccessMessage("Registration successful! Please check your email to verify your account.")
+
+        //Clear Form
+        setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        phone: "",
+        role: "user",
+      })
         
         // Redirect to wallet/home after 3 seconds
         setTimeout(() => {
           navigate("/wallet")
-        }, 3000)
-      }
+        }, 2000)
+      }else {
+      const errorMsg = response?.message || response?.error || "Registration failed"
+      setFormError(errorMsg)
+      console.error("❌ Registration failed:", errorMsg)
+    }
     } catch (err) {
-      console.error("Registration error:", err)
-      setFormError(err.response?.data?.error || "Registration failed. Please try again.")
+      console.error("💥 Registration error:", err)
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message || "Registration failed. Please try again."    
+      setFormError(errorMsg)
     }
   }
 

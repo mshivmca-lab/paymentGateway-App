@@ -82,9 +82,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-
+      console.log("📤 Sending registration request:", userData);
       const res = await api.post("/auth/register", userData);
-
+      console.log("📥 Registration response received:", res.data);
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -96,14 +96,23 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
 
         resetSessionTimeout();
-      }
-
+        setLoading(false);
+        return res.data;
+      }else {
+      // Handle unsuccessful response
       setLoading(false);
-      return res.data;
-    } catch (err) {
-      setLoading(false);
-      setError(err.response?.data?.error || "Something went wrong");
-      throw err;
+      const errorMsg = res.data.error || res.data.message || "Registration failed";
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+    } 
+    catch (err) {
+      console.error("❌ Registration error:", err);
+    setLoading(false);
+    
+    const errorMessage = err.response?.data?.error || err.message || "Something went wrong";
+    setError(errorMessage);
+    throw err;
     }
   };
 
