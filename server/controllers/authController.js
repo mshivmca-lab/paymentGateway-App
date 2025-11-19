@@ -55,22 +55,58 @@ export const register = async (req, res) => {
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Verify Email",
-        html: `Click <a href='${link}'>here</a> to verify`,
+        subject: "Verify Your Email - Payment Gateway",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Welcome to Payment Gateway!</h2>
+            <p>Hi ${name},</p>
+            <p>Thank you for registering. Please verify your email address by clicking the button below:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${link}" 
+                 style="background-color: #4F46E5; color: white; padding: 12px 30px; 
+                        text-decoration: none; border-radius: 5px; display: inline-block;">
+                Verify Email
+              </a>
+            </div>
+            <p>Or copy and paste this link in your browser:</p>
+            <p style="word-break: break-all; color: #6B7280;">${link}</p>
+            <p>This link will expire in 24 hours.</p>
+            <p>If you didn't create an account, please ignore this email.</p>
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
+            <p style="color: #6B7280; font-size: 12px;">Payment Gateway Team</p>
+          </div>`,
       });
+      console.log("✅ Verification email sent to:", email);
     } catch (emailError) {
-      console.error("Email sending failed:", emailError.message);
+      console.error("❌ Email sending failed:", emailError.message);
     }
 
-    res.status(201).json({ msg: "Registered. Verify your email." });
+      // Generate JWT token for immediate login (optional)
+    const jwtToken = user.getSignedJwtToken();
 
-    // Send token response
-    // sendTokenResponse(user, 201, res);
+    // Remove password from response
+    user.password = undefined;
+
+    // Return success response with token and user data
+    res.status(201).json({
+      success: true,
+      message: "Registration successful! Please verify your email.",
+      token: jwtToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        isEmailVerified: user.isEmailVerified,
+      },
+    });
+
   } catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({
       success: false,
-      error: "Server error",
+      error: "Server error during registration",
     });
   }
 };

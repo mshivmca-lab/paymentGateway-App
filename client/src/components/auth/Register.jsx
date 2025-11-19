@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, CheckCircle } from "lucide-react"
 import {
   Card,
   CardHeader,
@@ -34,6 +34,7 @@ const Register = () => {
     role: "user",
   })
   const [formError, setFormError] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
 
   const { register, loading, error, clearError } = useAuth()
   const navigate = useNavigate()
@@ -43,6 +44,7 @@ const Register = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
     setFormError("")
+    setSuccessMessage("")
     clearError()
   }
 
@@ -73,10 +75,19 @@ const Register = () => {
       const userData = { ...formData }
       delete userData.confirmPassword
 
-      await register(userData)
-      navigate("/")
+      const response = await register(userData)
+      
+      if (response.success) {
+        setSuccessMessage("Registration successful! Please check your email to verify your account.")
+        
+        // Redirect to wallet/home after 3 seconds
+        setTimeout(() => {
+          navigate("/wallet")
+        }, 3000)
+      }
     } catch (err) {
       console.error("Registration error:", err)
+      setFormError(err.response?.data?.error || "Registration failed. Please try again.")
     }
   }
 
@@ -91,11 +102,25 @@ const Register = () => {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {(formError || error) && (
-              <div className="text-red-500 text-sm">
-                {formError || error}
+            {formError && (
+              <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-md text-sm">
+                {formError}
               </div>
             )}
+            
+            {error && (
+              <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-md text-sm">
+                {error}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="bg-green-500/10 border border-green-500 text-green-500 px-4 py-3 rounded-md text-sm flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                {successMessage}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="name">Full name</Label>
               <Input
@@ -105,6 +130,7 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="John Doe"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -118,14 +144,12 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="me@example.com"
                 required
+                disabled={loading}
               />
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
-                
-              </div>
+              <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -134,6 +158,7 @@ const Register = () => {
                   value={password}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                   className="h-10 sm:h-11"
                 />
                 <Button
@@ -142,17 +167,16 @@ const Register = () => {
                   size="icon"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={loading}
                 >
                   {showPassword ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
                   <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
                 </Button>
               </div>
             </div>
+
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm Password</Label>
-                
-              </div>
+              <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm Password</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -161,6 +185,7 @@ const Register = () => {
                   value={confirmPassword}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                   className="h-10 sm:h-11"
                 />
                 <Button
@@ -169,24 +194,13 @@ const Register = () => {
                   size="icon"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={loading}
                 >
                   {showConfirmPassword ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
                   <span className="sr-only">{showConfirmPassword ? "Hide password" : "Show password"}</span>
                 </Button>
               </div>
             </div>
-
-            {/* <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                name="confirmPassword"
-                value={confirmPassword}
-                onChange={handleChange}
-                required
-              />
-            </div> */}
 
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
@@ -196,13 +210,14 @@ const Register = () => {
                 name="phone"
                 value={phone}
                 onChange={handleChange}
-                placeholder=""
+                placeholder="1234567890"
+                disabled={loading}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="role">Register as</Label>
-              <Select value={role} onValueChange={handleRoleChange}>
+              <Select value={role} onValueChange={handleRoleChange} disabled={loading}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a Role" />
                 </SelectTrigger>
