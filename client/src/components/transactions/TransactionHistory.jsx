@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/button";
@@ -22,6 +23,7 @@ const TransactionHistory = () => {
     total: 0,
     pages: 0,
   });
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     type: "",
     status: "",
@@ -201,9 +203,7 @@ const TransactionHistory = () => {
                 <option value="pending">Pending</option>
                 <option value="failed">Failed</option>
               </select>
-              
             </div>
-            
 
             <div className="filter-group">
               <label htmlFor="startDate" className="text-foreground">
@@ -277,7 +277,7 @@ const TransactionHistory = () => {
                     <button
                       className="btn-view"
                       onClick={() =>
-                        (window.location.href = `/transactions/${transaction.transactionId}`)
+                        navigate(`/transactions/${transaction.transactionId}`)
                       }
                     >
                       View
