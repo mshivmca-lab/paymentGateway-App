@@ -1,89 +1,112 @@
-import { useState } from "react"
-import { useAuth } from "../../context/AuthContext"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs"
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "../ui/card"
-import { Label } from "../ui/label"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Card, CardContent, CardFooter } from "../ui/card";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 const Profile = () => {
-  const { user, updateProfile, updatePassword, loading, error } = useAuth()
+  const { user, updateProfile, updatePassword, loading, error } = useAuth();
 
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
-  })
+  });
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
+  });
 
-  const [message, setMessage] = useState("")
-  const [formError, setFormError] = useState("")
+  const [message, setMessage] = useState("");
+  const [formError, setFormError] = useState("");
 
   const handleProfileChange = (e) => {
-    setProfileData({ ...profileData, [e.target.name]: e.target.value })
-    setFormError("")
-    setMessage("")
-  }
+    setProfileData({ ...profileData, [e.target.name]: e.target.value });
+    setFormError("");
+    setMessage("");
+  };
 
   const handlePasswordChange = (e) => {
-    setPasswordData({ ...passwordData, [e.target.name]: e.target.value })
-    setFormError("")
-    setMessage("")
-  }
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    setFormError("");
+    setMessage("");
+  };
 
   const handleProfileSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      await updateProfile(profileData)
-      setMessage("Profile updated successfully")
+      await updateProfile(profileData);
+      setMessage("Profile updated successfully");
     } catch (err) {
-      setFormError(error || "Failed to update profile")
+      setFormError(error || "Failed to update profile");
     }
-  }
+  };
 
   const handlePasswordSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setFormError("Passwords do not match")
-      return
+      setFormError("Passwords do not match");
+      return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      setFormError("Password must be at least 6 characters")
-      return
+    if (passwordData.newPassword.length < 8) {
+      setFormError("Password must be at least 8 characters");
+      return;
     }
 
+    if (!/[A-Z]/.test(passwordData.newPassword)) {
+      setFormError("Password must contain at least one uppercase letter");
+      return;
+    }
+    if (!/[a-z]/.test(passwordData.newPassword)) {
+      setFormError("Password must contain at least one lowercase letter");
+      return;
+    }
+
+    if (!/[0-9]/.test(passwordData.newPassword)) {
+      setFormError("Password must contain at least one number");
+      return;
+    }
+
+    if (
+      !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.newPassword)
+    ) {
+      setFormError("Password must contain at least one special character");
+      return;
+    }
+
+    const commonPasswords = [
+      "password",
+      "password123",
+      "12345678",
+      "qwerty",
+      "abc123",
+    ];
+    if (commonPasswords.includes(passwordData.newPassword.toLowerCase())) {
+      setFormError("This password is too common. Please choose a stronger one");
+      return;
+    }
     try {
       await updatePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
-      })
+      });
 
-      setMessage("Password updated successfully")
+      setMessage("Password updated successfully");
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-      })
+      });
     } catch (err) {
-      setFormError(error || "Failed to update password")
+      setFormError(error || "Failed to update password");
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
@@ -199,7 +222,7 @@ const Profile = () => {
         </Tabs>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;
