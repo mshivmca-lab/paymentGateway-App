@@ -72,22 +72,22 @@ const Register = () => {
       setFormError("Password must be at least 8 characters")
       return
     }
-    if (!/[A-Z]/.test(passwordData.newPassword)) {
+    if (!/[A-Z]/.test(password)) {
       setFormError("Password must contain at least one uppercase letter");
       return;
     }
-    if (!/[a-z]/.test(passwordData.newPassword)) {
+    if (!/[a-z]/.test(password)) {
       setFormError("Password must contain at least one lowercase letter");
       return;
     }
 
-    if (!/[0-9]/.test(passwordData.newPassword)) {
+    if (!/[0-9]/.test(password)) {
       setFormError("Password must contain at least one number");
       return;
     }
 
     if (
-      !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.newPassword)
+      !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
     ) {
       setFormError("Password must contain at least one special character");
       return;
@@ -100,7 +100,7 @@ const Register = () => {
       "qwerty",
       "abc123",
     ];
-    if (commonPasswords.includes(passwordData.newPassword.toLowerCase())) {
+    if (commonPasswords.includes(password.toLowerCase())) {
       setFormError("This password is too common. Please choose a stronger one");
       return;
     }
