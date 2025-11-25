@@ -51,8 +51,7 @@ export const register = async (req, res) => {
 
     //email
     const link = `${process.env.CLIENT_URL}/verify-email/${token}`;
-    try {
-      await transporter.sendMail({
+    transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Verify Your Email - Payment Gateway",
@@ -75,11 +74,9 @@ export const register = async (req, res) => {
             <hr style="margin: 30px 0; border: none; border-top: 1px solid #E5E7EB;">
             <p style="color: #6B7280; font-size: 12px;">Payment Gateway Team</p>
           </div>`,
-      });
-      console.log("✅ Verification email sent to:", email);
-    } catch (emailError) {
-      console.error("❌ Email sending failed:", emailError.message);
-    }
+    })
+    .then(() => console.log("✅ Verification email sent to:", email))
+    .catch((emailError) => console.error("❌ Email sending failed:", emailError.message));
 
       // Generate JWT token for immediate login (optional)
     const jwtToken = user.getSignedJwtToken();

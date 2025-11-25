@@ -13,6 +13,9 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
 // Verify connection
@@ -20,7 +23,7 @@ transporter.verify((error, success) => {
   if (error) {
     console.error('❌ Email configuration error:', error);
   } else {
-    console.success('✅ Email server is ready to send messages');
+    console.log('✅ Email server is ready to send messages');
   }
 });
 
